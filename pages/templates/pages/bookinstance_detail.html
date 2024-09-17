@@ -1,0 +1,27 @@
+{% extends "pages/catalog.html" %}
+
+{% block content %}
+    {% for copy in bookinstance.book.bookinstance_set.all %}
+      <hr>
+      <p class="{% if copy.status == 'a' %}text-success{% elif copy.status == 'm' %}text-danger{% else %}text-warning{% endif %}">{{ copy.get_status_display }}</p>
+      {% if copy.status != 'a' %}
+        <p><strong>Due to be returned:</strong> {{copy.due_back}}</p>
+      {% endif %}
+      <p><strong>Imprint:</strong> {{copy.imprint}}</p>
+      <p class="text-muted"><strong>Id:</strong> {{copy.id}}</p>
+      <table class="table card-table table-vcenter">
+        <tr>
+            <td class="text-nowrap">
+              <a href="" class="text-secondary">
+                <strong> Update_BookInstance</strong>
+              </a>
+            </td>
+            <td class="text-nowrap">
+              <a href="" class="text-secondary">
+                <strong>Delete_BookInstance</strong> </a>
+            </td>
+        </tr>
+      </table>
+    {% endfor %}
+  <a href="{% url 'books' %}">Back to Books List</a>
+{% endblock %}
