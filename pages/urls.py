@@ -36,8 +36,6 @@ urlpatterns = [
     path('bookinstance/<uuid:pk>/update/', views.BookInstanceUpdateView.as_view(), name='bookinstance_update'),
     path('bookinstance/<uuid:pk>/delete/', views.BookInstanceDeleteView.as_view(), name='bookinstance_delete'),
     path('bookinstance/<uuid:pk>', views.BookInstanceDetailView.as_view(), name='bookinstance_detail'),
-    path('consumindo_books/',views.BooksPage.as_view(),name='consumindo_book'),
-    path('consumindo_authors/',views.AuthorsPage.as_view(),name='consumindo_author')
 ]               
 
 # urlpatterns = [

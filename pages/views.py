@@ -1,8 +1,11 @@
 # from django.shortcuts import render
 # # Create your views here.
+from argparse import Action
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from datetime import datetime
+
+import requests
 from pages.models import Author, Genre
 from django import forms
 from django.core.exceptions import ValidationError
@@ -18,79 +21,77 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from pages.serializers import AuthorSerializer, BookInstanceSerializer, BookSerializer, GenreSerializer
-from rest_framework import viewsets, permissions
-import requests
-from requests.auth import HTTPBasicAuth
+from rest_framework import viewsets, permissions,mixins
 from django.contrib.auth import authenticate, login
 
-#Consumindo api de books
-class BooksPage(generic.TemplateView):
-    def get(self,request):
-        url = 'http://127.0.0.1:8000/api/v1/books'
-        token = request.COOKIES['csrftoken']
+# #Consumindo api de books
+# class BooksPage(generic.TemplateView):
+#     def get(self,request):
+#         url = 'http://127.0.0.1:8000/api/v1/books'
+#         token = request.COOKIES['csrftoken']
         
-        headers = {
-            # "X-CSRFToken": token,
-            "Content-Type": "application/json"
-        }
-        if self.request.user.is_authenticated: 
-            username = self.request.user.username
-            password = self.request.user.password
-            print(self.request.user.check_password(password))
-        # headers = {
-        # 'Authorization': f'Bearer {token}',  # O padrão para APIs que usam "Bearer"
-        # }
-            try:
-            # # Utiliza HTTPBasicAuth para enviar username e senha
-                response = requests.get(url)
-                                        # ,headers )
-                # , auth=HTTPBasicAuth(username=username, password=password))
-                if response.status_code == 200:
-                    books = response.json()        
-            #print(books[0])
-                    books_list = {'books':books}
-                #else:
-                #   books = []   
-            except requests.exceptions.RequestException as e:    
-                    print(f"Erro ao fazer requisição: {e}")
-            return render(request,'pages/books.html',books_list)
+#         headers = {
+#             # "X-CSRFToken": token,
+#             "Content-Type": "application/json"
+#         }
+#         if self.request.user.is_authenticated: 
+#             username = self.request.user.username
+#             password = self.request.user.password
+#             print(self.request.user.check_password(password))
+#         # headers = {
+#         # 'Authorization': f'Bearer {token}',  # O padrão para APIs que usam "Bearer"
+#         # }
+#             try:
+#             # # Utiliza HTTPBasicAuth para enviar username e senha
+#                 response = requests.get(url)
+#                                         # ,headers )
+#                 # , auth=HTTPBasicAuth(username=username, password=password))
+#                 if response.status_code == 200:
+#                     books = response.json()        
+#             #print(books[0])
+#                     books_list = {'books':books}
+#                 #else:
+#                 #   books = []   
+#             except requests.exceptions.RequestException as e:    
+#                     print(f"Erro ao fazer requisição: {e}")
+#             return render(request,'pages/books.html',books_list)
 
-class BookInstancePage(generic.TemplateView):
-    def get(self,request):
-        url = 'http://127.0.0.1:8000/api/v1/bookinstance'
+# class BookInstancePage(generic.TemplateView):
+#     def get(self,request):
+#         url = 'http://127.0.0.1:8000/api/v1/bookinstance'
 
-        try:
-        # Utiliza HTTPBasicAuth para enviar username e senha
-            response = requests.get(url, auth=HTTPBasicAuth(self.request.user.username, self.request.user.u))
-            if response.status_code == 200:
-                books = response.json()        
-                print(books[0])
-                books_list = {'books':books}
-            else:
-                books = []   
-        except requests.exceptions.RequestException as e:    
-                print(f"Erro ao fazer requisição: {e}")
-        return render(request,'pages/books.html',books_list)
+#         try:
+#         # Utiliza HTTPBasicAuth para enviar username e senha
+#             response = requests.get(url, auth=HTTPBasicAuth(self.request.user.username, self.request.user.u))
+#             if response.status_code == 200:
+#                 books = response.json()        
+#                 print(books[0])
+#                 books_list = {'books':books}
+#             else:
+#                 books = []   
+#         except requests.exceptions.RequestException as e:    
+#                 print(f"Erro ao fazer requisição: {e}")
+#         return render(request,'pages/books.html',books_list)
     
-class AuthorsPage(generic.TemplateView):
-    def get(self,request):
-        url = 'http://127.0.0.1:8000/api/v1/author'
+# class AuthorsPage(generic.TemplateView):
+#     def get(self,request):
+#         url = 'http://127.0.0.1:8000/api/v1/author'
         
-        username = "usuario"
-        password = "123"
+#         username = "usuario"
+#         password = "123"
         
-        try:
-        # Utiliza HTTPBasicAuth para enviar username e senha
-            response = requests.get(url, auth=HTTPBasicAuth(username, password))
-            if response.status_code == 200:
-                authors = response.json()        
-                print(authors[0])
-                authors_list = {'authors':authors}
-            else:
-                authors = []   
-        except requests.exceptions.RequestException as e:    
-                print(f"Erro ao fazer requisição: {e}")
-        return render(request,'pages/authors.html',authors_list)
+#         try:
+#         # Utiliza HTTPBasicAuth para enviar username e senha
+#             response = requests.get(url, auth=HTTPBasicAuth(username, password))
+#             if response.status_code == 200:
+#                 authors = response.json()        
+#                 print(authors[0])
+#                 authors_list = {'authors':authors}
+#             else:
+#                 authors = []   
+#         except requests.exceptions.RequestException as e:    
+#                 print(f"Erro ao fazer requisição: {e}")
+#         return render(request,'pages/authors.html',authors_list)
     
     # def get(self,request):
     #     r = requests.get('http://127.0.0.1:8000/api/v1/author')
@@ -102,12 +103,21 @@ class AuthorsPage(generic.TemplateView):
 # def Books(self):
 #     http://127.0.0.1:8000/api/v1/books
 
-class BookViewSet(viewsets.ModelViewSet):
-  queryset = Book.objects.all()
-  serializer_class = BookSerializer
-  permission_classes = [permissions.IsAuthenticated]
-  
+
+class BookViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
+#   @Action(detail=False, methods=['POST'], serializer_class=BookSerializer)  
+#   def create(self, request, *args, **kwargs):
+#     queryset = Book.objects.all()
+#     serializer = BookSerializer(queryset, many=True)
+#     return requests.Response(serializer.data)
+  #permission_classes = [permissions.IsAuthenticated]
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    # queryset = Book.objects.all()
+    # serializer_class = BookSerializer
+#   (queryset, many=True)
 class AuthorViewSet(viewsets.ModelViewSet):
+    
   queryset = Author.objects.all()
   serializer_class = AuthorSerializer
 #   permission_classes = [permissions.IsAuthenticated]
@@ -115,7 +125,7 @@ class AuthorViewSet(viewsets.ModelViewSet):
 class  BookInstanceViewSet(viewsets.ModelViewSet):
   queryset = BookInstance.objects.all()
   serializer_class = BookInstanceSerializer
-  permission_classes = [permissions.IsAuthenticated]
+  #permission_classes = [permissions.IsAuthenticated]
   
 class GenreViewSet(viewsets.ModelViewSet):
   queryset = Genre.objects.all()
@@ -285,15 +295,16 @@ def AuthorListView(request):
 class BookDetailView(LoginRequiredMixin,generic.DetailView):
     model = Book
     paginate_by = 10
+        
     def book_detail_view(request, primary_key):
         book = get_object_or_404(Book, pk=primary_key)
         return render(request, 'pages/book_detail.html', context={'book': book})
     
-class BookCreateView(LoginRequiredMixin,CreateView):
+class BookCreateView(LoginRequiredMixin,CreateView,mixins.CreateModelMixin):
     model = Book
     fields = '__all__'
     initial = {'date_of_death': '05/01/2018'}
-
+    
     def get_success_url(self):
         return reverse('book-detail', kwargs={'pk': self.object.pk})
 
