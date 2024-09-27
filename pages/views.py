@@ -24,100 +24,11 @@ from pages.serializers import AuthorSerializer, BookInstanceSerializer, BookSeri
 from rest_framework import viewsets, permissions,mixins
 from django.contrib.auth import authenticate, login
 
-# #Consumindo api de books
-# class BooksPage(generic.TemplateView):
-#     def get(self,request):
-#         url = 'http://127.0.0.1:8000/api/v1/books'
-#         token = request.COOKIES['csrftoken']
-        
-#         headers = {
-#             # "X-CSRFToken": token,
-#             "Content-Type": "application/json"
-#         }
-#         if self.request.user.is_authenticated: 
-#             username = self.request.user.username
-#             password = self.request.user.password
-#             print(self.request.user.check_password(password))
-#         # headers = {
-#         # 'Authorization': f'Bearer {token}',  # O padrão para APIs que usam "Bearer"
-#         # }
-#             try:
-#             # # Utiliza HTTPBasicAuth para enviar username e senha
-#                 response = requests.get(url)
-#                                         # ,headers )
-#                 # , auth=HTTPBasicAuth(username=username, password=password))
-#                 if response.status_code == 200:
-#                     books = response.json()        
-#             #print(books[0])
-#                     books_list = {'books':books}
-#                 #else:
-#                 #   books = []   
-#             except requests.exceptions.RequestException as e:    
-#                     print(f"Erro ao fazer requisição: {e}")
-#             return render(request,'pages/books.html',books_list)
-
-# class BookInstancePage(generic.TemplateView):
-#     def get(self,request):
-#         url = 'http://127.0.0.1:8000/api/v1/bookinstance'
-
-#         try:
-#         # Utiliza HTTPBasicAuth para enviar username e senha
-#             response = requests.get(url, auth=HTTPBasicAuth(self.request.user.username, self.request.user.u))
-#             if response.status_code == 200:
-#                 books = response.json()        
-#                 print(books[0])
-#                 books_list = {'books':books}
-#             else:
-#                 books = []   
-#         except requests.exceptions.RequestException as e:    
-#                 print(f"Erro ao fazer requisição: {e}")
-#         return render(request,'pages/books.html',books_list)
-    
-# class AuthorsPage(generic.TemplateView):
-#     def get(self,request):
-#         url = 'http://127.0.0.1:8000/api/v1/author'
-        
-#         username = "usuario"
-#         password = "123"
-        
-#         try:
-#         # Utiliza HTTPBasicAuth para enviar username e senha
-#             response = requests.get(url, auth=HTTPBasicAuth(username, password))
-#             if response.status_code == 200:
-#                 authors = response.json()        
-#                 print(authors[0])
-#                 authors_list = {'authors':authors}
-#             else:
-#                 authors = []   
-#         except requests.exceptions.RequestException as e:    
-#                 print(f"Erro ao fazer requisição: {e}")
-#         return render(request,'pages/authors.html',authors_list)
-    
-    # def get(self,request):
-    #     r = requests.get('http://127.0.0.1:8000/api/v1/author')
-    #     authors = r.json()        
-    #     print(authors[0])
-    #     authors_list = {'authors':authors}
-    #     return render(request,'pages/authors.html',authors_list)  
-      
-# def Books(self):
-#     http://127.0.0.1:8000/api/v1/books
-
-
 class BookViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
-#   @Action(detail=False, methods=['POST'], serializer_class=BookSerializer)  
-#   def create(self, request, *args, **kwargs):
-#     queryset = Book.objects.all()
-#     serializer = BookSerializer(queryset, many=True)
-#     return requests.Response(serializer.data)
-  #permission_classes = [permissions.IsAuthenticated]
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    # queryset = Book.objects.all()
-    # serializer_class = BookSerializer
-#   (queryset, many=True)
-class AuthorViewSet(viewsets.ModelViewSet):
     
+class AuthorViewSet(viewsets.ModelViewSet):
   queryset = Author.objects.all()
   serializer_class = AuthorSerializer
 #   permission_classes = [permissions.IsAuthenticated]
