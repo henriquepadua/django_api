@@ -8,15 +8,19 @@ class BookInstanceSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
   genre = serializers.PrimaryKeyRelatedField(many=True, queryset=Genre.objects.all())
+  bookinstance_set = BookInstanceSerializer(many=True,required=False)
 
   class Meta:
       model = Book
-      fields = ['title', 'author', 'summary', 'isbn', 'genre']
+      fields = '__all__'
 
   def create(self, validated_data):
+      bookinstances_data = validated_data.pop('bookinstance_set', [])
       genres = validated_data.pop('genre')
       book = Book.objects.create(**validated_data)
       book.genre.set(genres)  # Use set to assign many-to-many field
+      for bookinstance_data in bookinstances_data:
+            BookInstance.objects.create(book=book, **bookinstance_data)
       return book
   # bookinstance_set = BookInstanceSerializer(many=True,required=False)
   # class Meta:
