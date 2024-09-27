@@ -302,11 +302,19 @@ class BookDetailView(LoginRequiredMixin,generic.DetailView):
     
 class BookCreateView(LoginRequiredMixin,CreateView,mixins.CreateModelMixin):
     model = Book
-    fields = '__all__'
-    initial = {'date_of_death': '05/01/2018'}
+    fields = ['title', 'author', 'summary', 'isbn', 'genre']
+
+    def form_valid(self, form):
+        book = form.save(commit=False)
+        genres = form.cleaned_data['genre']
+        book.genre.set(genres)  # Use set to update the many-to-many field
+        return super().form_valid(form)
+    # model = Book
+    # fields = '__all__'
+    # initial = {'date_of_death': '05/01/2018'}
     
-    def get_success_url(self):
-        return reverse('book-detail', kwargs={'pk': self.object.pk})
+    # def get_success_url(self):
+    #     return reverse('book-detail', kwargs={'pk': self.object.pk})
 
 class BookUpdateView(LoginRequiredMixin,UpdateView):
     model = Book
