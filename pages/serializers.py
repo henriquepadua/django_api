@@ -1,5 +1,25 @@
 from rest_framework import serializers
 from pages.models import Author, Book, BookInstance, Genre
+from django.contrib.auth import get_user_model
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+User = get_user_model()
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ['url', 'username', 'email', 'is_staff']
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        return token
 
 class BookInstanceSerializer(serializers.ModelSerializer):
   class Meta:
