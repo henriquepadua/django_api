@@ -4,8 +4,6 @@ from argparse import Action
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from datetime import datetime
-
-import requests
 from pages.models import Author, Genre
 from django import forms
 from django.core.exceptions import ValidationError
@@ -23,11 +21,41 @@ from django.urls import reverse
 from pages.serializers import AuthorSerializer, BookInstanceSerializer, BookSerializer, GenreSerializer
 from rest_framework import viewsets, permissions,mixins
 from django.contrib.auth import authenticate, login
+from .serializers import MyTokenObtainPairSerializer, UserSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CustomTokenObtainPairView(TokenObtainPairView):
+    pass
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class SecureView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        content = {'message': 'Você está autenticado!'}
+        return Response(content)
+
+class MyObtainTokenPairView(TokenObtainPairView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = MyTokenObtainPairSerializer
 
 class BookViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    
+
 class AuthorViewSet(viewsets.ModelViewSet):
   queryset = Author.objects.all()
   serializer_class = AuthorSerializer
@@ -268,3 +296,4 @@ class BookInstanceDeleteView(LoginRequiredMixin,DeleteView):
     #     if exception:
     #         return redirect('your-custom-error-view-name', error='error messsage')
     #     return render(request,"pages/books.html",{})
+
