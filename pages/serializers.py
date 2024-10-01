@@ -4,13 +4,6 @@ from django.contrib.auth import get_user_model
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-User = get_user_model()
-
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ['url', 'username', 'email', 'is_staff']
-
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     @classmethod
