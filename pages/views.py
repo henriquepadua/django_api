@@ -21,35 +21,20 @@ from django.urls import reverse
 from pages.serializers import AuthorSerializer, BookInstanceSerializer, BookSerializer, GenreSerializer
 from rest_framework import viewsets, permissions,mixins
 from django.contrib.auth import authenticate, login
-from .serializers import MyTokenObtainPairSerializer, UserSerializer
+from .serializers import MyTokenObtainPairSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 
-@method_decorator(csrf_exempt, name='dispatch')
-class CustomTokenObtainPairView(TokenObtainPairView):
-    pass
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-class SecureView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        content = {'message': 'Você está autenticado!'}
-        return Response(content)
-
 class MyObtainTokenPairView(TokenObtainPairView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
     serializer_class = MyTokenObtainPairSerializer
 
 class BookViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
@@ -61,11 +46,16 @@ class AuthorViewSet(viewsets.ModelViewSet):
   serializer_class = AuthorSerializer
 #   permission_classes = [permissions.IsAuthenticated]
   
-class  BookInstanceViewSet(viewsets.ModelViewSet):
-  queryset = BookInstance.objects.all()
-  serializer_class = BookInstanceSerializer
-  #permission_classes = [permissions.IsAuthenticated]
-  
+class BookInstanceViewSet(viewsets.ModelViewSet):
+    queryset = BookInstance.objects.all()
+    serializer_class = BookInstanceSerializer
+    permission_classes = [IsAuthenticated]  # Garante que apenas usuários autenticados possam acessar
+    
+    def list(self, request):
+        queryset = BookInstance.objects.filter(borrower=self.request.user).order_by('due_back')
+        serializer = BookInstanceSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
 class GenreViewSet(viewsets.ModelViewSet):
   queryset = Genre.objects.all()
   serializer_class = GenreSerializer
