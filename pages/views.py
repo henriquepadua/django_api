@@ -21,7 +21,7 @@ from django.urls import reverse
 from pages.serializers import AuthorSerializer, BookInstanceSerializer, BookSerializer, GenreSerializer
 from rest_framework import viewsets, permissions,mixins
 from django.contrib.auth import authenticate, login
-from .serializers import MyTokenObtainPairSerializer
+from .serializers import MyTokenObtainPairSerializer, UserSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.views.decorators.csrf import csrf_exempt
@@ -40,11 +40,19 @@ class MyObtainTokenPairView(TokenObtainPairView):
 class BookViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    #permission_classes = [IsAuthenticated]  # Garante que apenas usuários autenticados possam acessar
+
+class UserViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        # Exclui o usuário logado do queryset
+        return User.objects.exclude(id=self.request.user.id)
 
 class AuthorViewSet(viewsets.ModelViewSet):
   queryset = Author.objects.all()
   serializer_class = AuthorSerializer
-#   permission_classes = [permissions.IsAuthenticated]
+  permission_classes = [permissions.IsAuthenticated]
   
 class BookInstanceViewSet(viewsets.ModelViewSet):
     queryset = BookInstance.objects.all()
@@ -59,7 +67,7 @@ class BookInstanceViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
   queryset = Genre.objects.all()
   serializer_class = GenreSerializer
-  #permission_classes = [permissions.IsAuthenticated]      
+  permission_classes = [permissions.IsAuthenticated]      
 
 class LoanedBooksByUserListViewSet(LoginRequiredMixin,generic.ListView):
     """Generic class-based view listing books on loan to current user."""
