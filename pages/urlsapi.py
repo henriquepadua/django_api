@@ -3,7 +3,7 @@ from django.db import router
 from django.urls import include, path
 from pages import views
 from rest_framework.routers import DefaultRouter
-from pages.views import AuthorViewSet, BookInstanceViewSet, BookViewSet, GenreViewSet, LoanedBooksByUserListViewSet, MyObtainTokenPairView
+from pages.views import AuthorViewSet, BookInstanceViewSet, BookViewSet, GenreViewSet, LoanedBooksByUserListViewSet, MyObtainTokenPairView, UserViewSet
 
 app_name = 'api'
 
@@ -12,9 +12,7 @@ router.register(r'books', BookViewSet)
 router.register(r'genre', GenreViewSet)
 router.register(r'author', AuthorViewSet)
 router.register(r'bookinstance', BookInstanceViewSet)
-#router.register(r'login', MyObtainTokenPairView, basename='login')
-
-# router.register(r'my-borrowed', LoanedBooksByUserListViewSet)
+router.register(r'user', UserViewSet,basename="user")
 
 urlpatterns = [
     path('', include(router.urls)),
