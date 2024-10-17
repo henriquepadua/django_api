@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 # # Create your views here.
+from rest_framework import viewsets, status
 from argparse import Action
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -37,22 +38,58 @@ class MyObtainTokenPairView(TokenObtainPairView):
     permission_classes = (AllowAny,)
     serializer_class = MyTokenObtainPairSerializer
 
-class BookViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
+class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    #permission_classes = [IsAuthenticated]  # Garante que apenas usuários autenticados possam acessar
 
-class UserViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'Erro ao criar livro: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'Erro ao atualizar livro: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserBorrowedViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        # Exclui o usuário logado do queryset
         return User.objects.exclude(id=self.request.user.id)
 
+class UserViewSet(viewsets.ModelViewSet,mixins.CreateModelMixin):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
 class AuthorViewSet(viewsets.ModelViewSet):
-  queryset = Author.objects.all()
-  serializer_class = AuthorSerializer
-  permission_classes = [permissions.IsAuthenticated]
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(e.detail, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'Erro ao atualizar autor: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
   
 class BookInstanceViewSet(viewsets.ModelViewSet):
     queryset = BookInstance.objects.all()
@@ -65,9 +102,31 @@ class BookInstanceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 class GenreViewSet(viewsets.ModelViewSet):
-  queryset = Genre.objects.all()
-  serializer_class = GenreSerializer
-  permission_classes = [permissions.IsAuthenticated]      
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'Erro ao criar gênero: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'Erro ao atualizar gênero: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            return Response({'detail': f'Erro ao listar gêneros: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
 
 class LoanedBooksByUserListViewSet(LoginRequiredMixin,generic.ListView):
     """Generic class-based view listing books on loan to current user."""
@@ -246,12 +305,6 @@ class BookCreateView(LoginRequiredMixin,CreateView,mixins.CreateModelMixin):
         genres = form.cleaned_data['genre']
         book.genre.set(genres)  # Use set to update the many-to-many field
         return super().form_valid(form)
-    # model = Book
-    # fields = '__all__'
-    # initial = {'date_of_death': '05/01/2018'}
-    
-    # def get_success_url(self):
-    #     return reverse('book-detail', kwargs={'pk': self.object.pk})
 
 class BookUpdateView(LoginRequiredMixin,UpdateView):
     model = Book
