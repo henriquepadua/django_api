@@ -1,4 +1,5 @@
 from datetime import date
+import re
 from rest_framework import serializers
 from pages.models import Author, Book, BookInstance, Genre
 from django.contrib.auth import get_user_model
@@ -64,20 +65,23 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     # Validação para o primeiro nome
     def validate_first_name(self, value):
+        if not re.match("^[A-Za-zÀ-ÿ\s]*$", value):
+            raise serializers.ValidationError("O primeiro nome deve conter apenas letras e espaços.")
         if len(value) < 2:
             raise serializers.ValidationError("O primeiro nome deve conter pelo menos 2 caracteres.")
         return value
 
     # Validação para o último nome
     def validate_last_name(self, value):
+        if not re.match("^[A-Za-zÀ-ÿ\s]*$", value):
+            raise serializers.ValidationError("O sobrenome deve conter apenas letras e espaços.")
         if len(value) < 2:
             raise serializers.ValidationError("O sobrenome deve conter pelo menos 2 caracteres.")
         return value
 
-    # Validação para garantir que a data de falecimento não seja anterior à data de nascimento
     def validate(self, data):
         if data['date_of_death'] and data['date_of_birth'] and data['date_of_death'] < data['date_of_birth']:
-            raise serializers.ValidationError("A data de falecimento não pode ser anterior à data de nascimento.")
+            raise serializers.ValidationError({'date_of_death': "A data de falecimento não pode ser anterior à data de nascimento."})
         return data
         
 class GenreSerializer(serializers.ModelSerializer):
